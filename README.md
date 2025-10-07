@@ -9,3 +9,10 @@ A few programs with vulnerabilities:
 ## Setup
 
 [Download CodeQL CLI binaries](https://github.com/github/codeql-cli-binaries/releases)
+- codeql-osx64.zip for mac OS, codeql-win64.zip for windows, and codeql-linux64.zip for linux
+
+Clone our repo with:
+  git clone 
+
+  codeql database create test_db --language=c --source-root=./vulnerable_programs
+
