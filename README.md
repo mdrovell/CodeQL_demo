@@ -78,6 +78,21 @@ codeql database create my-database \
   --no-run-unnecessary-builds
 ```
 
+### Running Standard Suite (C/C++)
+```bash
+# Run all standard C/C++ security queries
+codeql database analyze my-database \
+  path/to/codeql-repo/cpp/ql/src/codeql-suites/cpp-security-and-quality.qls \
+  --format=sarif-latest \
+  --output=results.sarif
+
+# View results in human-readable format
+codeql database analyze my-database \
+  path/to/codeql-repo/cpp/ql/src/codeql-suites/cpp-security-and-quality.qls \
+  --format=csv \
+  --output=results.csv
+```
+
 ### Install Query Pack
 To run custom queries, install the query pack with the following commands:
 ```bash
