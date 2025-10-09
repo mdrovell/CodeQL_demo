@@ -73,10 +73,21 @@ codeql database create my-database \
 
 # for projects without compilation
 codeql database create my-database \
-  --language=c-cpp \
+  --language=javascript \
   --source-root=. \
   --no-run-unnecessary-builds
 ```
+
+| Aspect | `--command` | `--no-run-unnecessary-builds` |
+|--------|-------------|-------------------------------|
+| **Purpose** | Specifies what to monitor | Optimization to skip builds |
+| **When used** | Compiled languages primarily | Interpreted languages |
+| **Effect** | Limits extraction to compiled code | Extracts all discoverable source files |
+| **Build runs** | Yes, always | Only if necessary |
+
+Under the hood, CodeQL effectively parses the source code using language-specific extractors
+and directly builds an Abstract Syntax Tree (AST) and Control Flow Graph (CFG) for the program. 
+This process extracts semantic information like type hierarchies, variable scopes, and data flow while storing all this information as relational data in a CodeQL database.
 
 ### Running Standard Suite (C/C++)
 ```bash
@@ -112,3 +123,54 @@ codeql bqrs decode results.bqrs \
 ```
 
 This will allow you to run queries above and decode them in a human-readable format.
+
+CodeQL uses a declarative, object-oriented query language similar to SQL but designed for code analysis. 
+
+The language includes:
+- Predicates (logical relations) that define patterns in code.
+```ql
+// Find all static functions
+predicate isStatic(Function f) {
+  f.isStatic()
+}
+
+from Function f
+where isStatic(f)
+select f, "Static function"
+```
+- Classes that model code elements (functions, variables, expressions, etc.).
+```
+// Define a custom class for buffer allocation functions
+class BufferAllocation extends FunctionCall {
+  BufferAllocation() {
+    this.getTarget().getName() in ["malloc", "calloc", "alloca"]
+  }
+  
+  Expr getSize() {
+    result = this.getArgument(0)
+  }
+}
+
+from BufferAllocation alloc
+select alloc, "Buffer allocated with size: " + alloc.getSize()
+```
+
+- Recursive queries for complex analysis like dataflow tracking.
+```
+// Find all functions reachable from main()
+predicate reachable(Function source, Function target) {
+  exists(FunctionCall call |
+    call.getEnclosingFunction() = source and
+    call.getTarget() = target
+  )
+  or
+  exists(Function mid |
+    reachable(source, mid) and
+    reachable(mid, target)
+  )
+}
+
+from Function main, Function f
+where main.getName() = "main" and reachable(main, f)
+select f, "Function reachable from main()"
+```
