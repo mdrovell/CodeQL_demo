@@ -76,6 +76,9 @@ codeql database create my-database \
   --language=javascript \
   --source-root=. \
   --no-run-unnecessary-builds
+
+    alternatively use if above fails: 
+      --build-mode none
 ```
 
 | Aspect | `--command` | `--no-run-unnecessary-builds` |
